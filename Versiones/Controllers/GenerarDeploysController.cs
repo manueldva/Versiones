@@ -6,11 +6,11 @@ using System.Data;
 using System.Linq;
 using Versiones.Models;
 
-public class RecuperarObjetosController : Controller
+public class GenerarDeploysController : Controller
 {
     private readonly ApplicationDbContext _context;
 
-    public RecuperarObjetosController(ApplicationDbContext context)
+    public GenerarDeploysController(ApplicationDbContext context)
     {
         _context = context;
     }
@@ -51,6 +51,7 @@ public class RecuperarObjetosController : Controller
                     {
                         TipoID = (int)x["TipoID"],
                         Tipo = (string)x["Tipo"],
+                        Selected = TipoID != null && (int)x["TipoID"] == TipoID
                     }).ToList();
             }
         }
@@ -58,7 +59,7 @@ public class RecuperarObjetosController : Controller
         ViewData["RecuperarObjetos"] = RecuperarObjetos;
         ViewData["TiposObjeto"] = tiposObjeto;
 
-        return View(RecuperarObjetos);
+        return View();
 
     }
 }

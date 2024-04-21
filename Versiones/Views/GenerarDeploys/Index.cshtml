@@ -1,0 +1,82 @@
+﻿<div class="row">
+    <!-- Agrega esta línea -->
+    <div class="col-3">
+        <!-- Agrega esta línea -->
+
+        <!-- Agrega este formulario -->
+        <form method="get">
+            <select name="TipoID" class="form-select" aria-label="Default select example">
+                <!-- Aquí puedes generar las opciones del select con los datos del procedimiento almacenado -->
+                @foreach (var tipoObjeto in (List<Versiones.Models.TipoObjeto>)ViewData["TiposObjeto"])
+                {
+                    @if (@tipoObjeto.Selected == true)
+                    {
+                        <option value="@tipoObjeto.TipoID" selected>@tipoObjeto.Tipo</option>
+                    }
+                    else
+                    {
+                        <option value="@tipoObjeto.TipoID">@tipoObjeto.Tipo</option>
+                    }
+                }
+            </select>
+        </form>
+        <br />
+        <div class="list-group">
+            @foreach (var objeto in (List<Versiones.Models.RecuperarObjeto>)ViewData["RecuperarObjetos"])
+            {
+                <a href="#" class="list-group-item list-group-item-action">@objeto.TABLE_NAME</a>
+
+            }
+    </div>
+           
+</div> <!-- Agrega esta línea -->
+
+    <div class="col-9">
+        <textarea id="sqlCode" style="width: 100%; height: calc(100vh - 150px);">USE [MHO]
+GO
+
+/****** Object:  Table [dbo].[Usuario]    Script Date: 21/4/2024 00:34:07 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Usuario](
+    [UsuarioID] [int] IDENTITY(1,1) NOT NULL,
+    [Username] [varchar](10) NULL,
+    [EmpleadoID] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+    [UsuarioID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+</textarea>
+
+        <!-- Agrega esta línea -->
+        <!-- Muestra el listado de RecuperarObjetos -->
+        
+    </div> <!-- Agrega esta línea -->
+</div>
+
+
+<script>
+    var editor = CodeMirror.fromTextArea(document.getElementById('sqlCode'), {
+        lineNumbers: true,
+        mode: 'text/x-mysql'
+    });
+    editor.setSize(null, 'calc(100vh - 150px)');
+
+
+    $(document).ready(function () {
+        $('select[name="TipoID"]').change(function () {
+            this.form.submit();
+        });
+    });
+</script>
+
+
+

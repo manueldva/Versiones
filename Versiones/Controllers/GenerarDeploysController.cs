@@ -18,7 +18,7 @@ public class GenerarDeploysController : Controller
     public IActionResult Index(int? TipoID, int? page)
     {
         int currentPage = page ?? 1; // Usa el número de página de la solicitud, o 1 si no se proporciona
-        int pageSize = 10; // Número de elementos por página
+        int pageSize = 1; // Número de elementos por página
 
         List<RecuperarObjeto> RecuperarObjetos = new List<RecuperarObjeto>();
         using (var command = _context.Database.GetDbConnection().CreateCommand())

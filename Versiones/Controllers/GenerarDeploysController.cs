@@ -15,14 +15,17 @@ public class GenerarDeploysController : Controller
         _context = context;
     }
 
-    public IActionResult Index(int? TipoID)
+    public IActionResult Index(int? TipoID, int? page)
     {
+        int currentPage = page ?? 1; // Usa el número de página de la solicitud, o 1 si no se proporciona
+        int pageSize = 10; // Número de elementos por página
+
         List<RecuperarObjeto> RecuperarObjetos = new List<RecuperarObjeto>();
         using (var command = _context.Database.GetDbConnection().CreateCommand())
         {
             command.CommandText = "VS_RecuperarObjetos_Cons_sp";
             command.CommandType = CommandType.StoredProcedure;
-            command.Parameters.Add(new SqlParameter("@TipoID", TipoID)); // Agrega '?? 0' aquí
+            command.Parameters.Add(new SqlParameter("@TipoID", TipoID));
             _context.Database.OpenConnection();
 
             using (var result = command.ExecuteReader())
@@ -33,9 +36,13 @@ public class GenerarDeploysController : Controller
                         ID = (int)x["ID"],
                         TABLE_SCHEMA = (string)x["TABLE_SCHEMA"],
                         TABLE_NAME = (string)x["TABLE_NAME"],
-                    }).ToList();
+                    })
+                    .Skip((currentPage - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
             }
         }
+
 
         List<TipoObjeto> tiposObjeto = new List<TipoObjeto>();
         using (var command = _context.Database.GetDbConnection().CreateCommand())
@@ -58,6 +65,8 @@ public class GenerarDeploysController : Controller
 
         ViewData["RecuperarObjetos"] = RecuperarObjetos;
         ViewData["TiposObjeto"] = tiposObjeto;
+        ViewData["currentPage"] = currentPage;
+        ViewData["pageSize"] = pageSize;
 
         return View();
 

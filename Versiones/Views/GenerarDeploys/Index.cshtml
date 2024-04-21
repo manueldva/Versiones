@@ -1,6 +1,6 @@
 ﻿<div class="row">
     <!-- Agrega esta línea -->
-    <div class="col-3">
+    <div class="col-2">
         <!-- Agrega esta línea -->
 
         <!-- Agrega este formulario -->
@@ -21,17 +21,25 @@
             </select>
         </form>
         <br />
+
         <div class="list-group">
             @foreach (var objeto in (List<Versiones.Models.RecuperarObjeto>)ViewData["RecuperarObjetos"])
             {
                 <a href="#" class="list-group-item list-group-item-action">@objeto.TABLE_NAME</a>
-
             }
-    </div>
            
-</div> <!-- Agrega esta línea -->
+        </div>
+        <br />
+        <div class="btn-group btn-group-lg" role="group" aria-label="Large button group">
+            <a href="?TipoID=@ViewData["TipoID"]&page=@(((int)ViewData["currentPage"]) - 1)" class="btn btn-outline-primary">Anterior</a>
+            <a href="?TipoID=@ViewData["TipoID"]&page=@(((int)ViewData["currentPage"]) + 1)" class="btn btn-outline-primary">Siguiente</a>
+        </div>
+        <!-- Botones de paginación -->
 
-    <div class="col-9">
+        
+    </div> <!-- Agrega esta línea -->
+
+    <div class="col-8">
         <textarea id="sqlCode" style="width: 100%; height: calc(100vh - 150px);">USE [MHO]
 GO
 
@@ -54,7 +62,7 @@ PRIMARY KEY CLUSTERED
 GO
 
 
-</textarea>
+        </textarea>
 
         <!-- Agrega esta línea -->
         <!-- Muestra el listado de RecuperarObjetos -->

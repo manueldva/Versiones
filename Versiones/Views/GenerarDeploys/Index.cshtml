@@ -23,10 +23,13 @@
         <br />
 
         <div class="list-group">
-            @foreach (var objeto in (List<Versiones.Models.RecuperarObjeto>)ViewData["RecuperarObjetos"])
-            {
-                <a href="#" class="list-group-item list-group-item-action">@objeto.TABLE_NAME</a>
-            }
+           @foreach (var objeto in (List<Versiones.Models.RecuperarObjeto>)ViewData["RecuperarObjetos"])
+           {
+                <a href="#" class="list-group-item list-group-item-action" onclick="mostrarDefinicion(`@Html.Raw(objeto.definition.Replace("'", "\\'"))`)">@objeto.TABLE_NAME</a>
+
+
+           }
+
            
         </div>
         <br />
@@ -40,28 +43,7 @@
     </div> <!-- Agrega esta línea -->
 
     <div class="col-9">
-        <textarea id="sqlCode" style="width: 100%; height: calc(100vh - 150px);">USE [MHO]
-GO
-
-/****** Object:  Table [dbo].[Usuario]    Script Date: 21/4/2024 00:34:07 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE TABLE [dbo].[Usuario](
-    [UsuarioID] [int] IDENTITY(1,1) NOT NULL,
-    [Username] [varchar](10) NULL,
-    [EmpleadoID] [int] NULL,
-PRIMARY KEY CLUSTERED 
-(
-    [UsuarioID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-
-
+        <textarea id="sqlCode" style="width: 100%; height: calc(100vh - 150px);">
         </textarea>
 
         <!-- Agrega esta línea -->
@@ -84,6 +66,19 @@ GO
             this.form.submit();
         });
     });
+    function mostrarDefinicion(definicion) {
+        let sqlCode = document.getElementById('sqlCode');
+        console.log(definicion);
+        // Actualizar el valor del editor de CodeMirror
+        if (editor) {
+            editor.setValue(definicion);
+        } else {
+            editor = CodeMirror.fromTextArea(sqlCode, {
+                lineNumbers: true,
+                mode: 'text/x-mysql'
+            });
+        }
+    }
 </script>
 
 

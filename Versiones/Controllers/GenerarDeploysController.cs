@@ -17,7 +17,7 @@ public class GenerarDeploysController : Controller
 
     public IActionResult Index(int? TipoID, int? page)
     {
-        int currentPage = page ?? 1; // Usa el número de página de la solicitud, o 1 si no se proporciona
+        int currentPage = (page != null && page > 0) ? page.Value : 1;
         int pageSize = 10; // Número de elementos por página
 
         List<RecuperarObjeto> RecuperarObjetos = new List<RecuperarObjeto>();
@@ -36,6 +36,7 @@ public class GenerarDeploysController : Controller
                         ID = (int)x["ID"],
                         TABLE_SCHEMA = (string)x["TABLE_SCHEMA"],
                         TABLE_NAME = (string)x["TABLE_NAME"],
+                        definition = (string)x["definition"],
                     })
                     .Skip((currentPage - 1) * pageSize)
                     .Take(pageSize)

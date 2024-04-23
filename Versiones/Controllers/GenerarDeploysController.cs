@@ -26,6 +26,8 @@ public class GenerarDeploysController : Controller
             command.CommandText = "VS_RecuperarObjetos_Cons_sp";
             command.CommandType = CommandType.StoredProcedure;
             command.Parameters.Add(new SqlParameter("@TipoID", TipoID));
+            command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new SqlParameter("@PageNumber", currentPage));
             _context.Database.OpenConnection();
 
             using (var result = command.ExecuteReader())
@@ -38,11 +40,10 @@ public class GenerarDeploysController : Controller
                         TABLE_NAME = (string)x["TABLE_NAME"],
                         definition = (string)x["definition"],
                     })
-                    .Skip((currentPage - 1) * pageSize)
-                    .Take(pageSize)
                     .ToList();
             }
         }
+
 
 
         List<TipoObjeto> tiposObjeto = new List<TipoObjeto>();

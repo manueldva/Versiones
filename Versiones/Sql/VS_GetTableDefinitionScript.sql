@@ -1,65 +1,42 @@
-ALTER PROCEDURE [dbo].[VS_RecuperarObjetos_Cons_sp] 
-    @TipoID int = NULL,
-    @PageSize int = 10,
-    @PageNumber int = 1
+alter FUNCTION dbo.VS_GetTableDefinitionScript(@TableName NVARCHAR(128))
+RETURNS NVARCHAR(MAX)
 AS
 BEGIN
-	DECLARE @Tipo varchar(200)
-	SELECT @Tipo = CASE
-	WHEN @TipoID = 2 THEN 'PROCEDURE'
-	WHEN @TipoID = 3 THEN 'FUNCTION'
-	END
+    DECLARE @CreateScript NVARCHAR(MAX);
 
-    IF @TipoID IS NULL OR @TipoID = 1
-    BEGIN
-        WITH CTE AS (
-            SELECT
-                ROW_NUMBER() OVER (ORDER BY TABLE_SCHEMA, TABLE_NAME) AS RowNum,
-                TABLE_SCHEMA,
-                TABLE_NAME,
-                dbo.VS_GetTableDefinitionScript(TABLE_NAME) AS definition
-            FROM
-                INFORMATION_SCHEMA.TABLES
-            WHERE
-                TABLE_TYPE = 'BASE TABLE'
-        )
-        SELECT
-            CAST(RowNum AS INT) ID,
-            TABLE_SCHEMA,
-            TABLE_NAME,
-            definition
-        FROM
-            CTE
-        WHERE
-            RowNum BETWEEN (@PageNumber - 1) * @PageSize + 1 AND @PageNumber * @PageSize
-        ORDER BY
-            TABLE_SCHEMA,
-            TABLE_NAME;
-    END 
-    ELSE
-    BEGIN
-        WITH CTE AS (
-            SELECT 
-                ROW_NUMBER() OVER (ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME) AS RowNum,
-                ROUTINE_SCHEMA AS TABLE_SCHEMA,
-                ROUTINE_NAME AS TABLE_NAME,
-                (SELECT ISNULL(definition, 'Encriptado') FROM sys.all_sql_modules WHERE object_id = OBJECT_ID(ROUTINE_NAME)) AS definition
-            FROM 
-                INFORMATION_SCHEMA.ROUTINES
-            WHERE 
-                ROUTINE_TYPE = @Tipo
-        )
+    SET @CreateScript = (
         SELECT 
-            CAST(RowNum AS INT) ID,
-            TABLE_SCHEMA,
-            TABLE_NAME,
-            definition
-        FROM 
-            CTE
-        WHERE 
-            RowNum BETWEEN (@PageNumber - 1) * @PageSize + 1 AND @PageNumber * @PageSize
-        ORDER BY 
-            TABLE_SCHEMA, 
-            TABLE_NAME;
-    END
-END
+            'CREATE TABLE ' + QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME) + CHAR(13) + '(' + CHAR(13) +
+            STUFF((
+                SELECT CHAR(9) + ', ' + QUOTENAME(c.name) + ' ' + t.name +
+                       CASE 
+                           WHEN t.name IN ('text', 'ntext', 'image') THEN ''
+                           WHEN c.max_length > 0 THEN '(' + CAST(c.max_length AS VARCHAR) + ')'
+                           ELSE ''
+                       END +
+                       CASE 
+                           WHEN c.is_nullable = 0 THEN ' NOT NULL'
+                           ELSE ''
+                       END +
+                       CASE 
+                           WHEN ic.index_column_id IS NOT NULL THEN ' PRIMARY KEY'
+                           ELSE ''
+                       END +
+                       CASE 
+                           WHEN c.is_identity = 1 THEN ' IDENTITY(' + CAST(ident.seed_value AS VARCHAR) + ',' + CAST(ident.increment_value AS VARCHAR) + ')'
+                           ELSE ''
+                       END + CHAR(13)
+                FROM sys.columns c
+                JOIN sys.types t ON c.user_type_id = t.user_type_id
+                JOIN sys.tables tb ON c.object_id = tb.object_id
+                LEFT JOIN sys.index_columns ic ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+                LEFT JOIN sys.identity_columns ident ON c.object_id = ident.object_id AND c.column_id = ident.column_id
+                WHERE tb.name = @TableName
+                ORDER BY c.column_id
+                FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') + CHAR(13) + ');' AS CreateScript
+        FROM INFORMATION_SCHEMA.TABLES t
+        WHERE t.TABLE_NAME = @TableName
+    );
+
+    RETURN @CreateScript;
+END;

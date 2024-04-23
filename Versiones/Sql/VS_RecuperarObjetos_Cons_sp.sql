@@ -4,6 +4,12 @@ ALTER PROCEDURE [dbo].[VS_RecuperarObjetos_Cons_sp]
     @PageNumber int = 1
 AS
 BEGIN
+	DECLARE @Tipo varchar(200)
+	SELECT @Tipo = CASE
+	WHEN @TipoID = 2 THEN 'PROCEDURE'
+	WHEN @TipoID = 3 THEN 'FUNCTION'
+	END
+
     IF @TipoID IS NULL OR @TipoID = 1
     BEGIN
         WITH CTE AS (
@@ -37,11 +43,11 @@ BEGIN
                 ROW_NUMBER() OVER (ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME) AS RowNum,
                 ROUTINE_SCHEMA AS TABLE_SCHEMA,
                 ROUTINE_NAME AS TABLE_NAME,
-                (SELECT ISNULL(definition, 'Encriptado') FROM sys.all_sql_modules WHERE object_id = OBJECT_ID(ROUTINE_NAME)) AS definition
+                (SELECT ISNULL(definition, '') FROM sys.all_sql_modules WHERE object_id = OBJECT_ID(ROUTINE_NAME)) AS definition
             FROM 
                 INFORMATION_SCHEMA.ROUTINES
             WHERE 
-                ROUTINE_TYPE = 'PROCEDURE'
+                ROUTINE_TYPE = @Tipo
         )
         SELECT 
             CAST(RowNum AS INT) ID,

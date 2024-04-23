@@ -25,11 +25,15 @@
         <div class="list-group">
             @foreach (var objeto in (List<Versiones.Models.RecuperarObjeto>)ViewData["RecuperarObjetos"])
             {
-                <a href="#" class="list-group-item list-group-item-action" @((string.IsNullOrEmpty(objeto.definition)) ? "disabled" : "") onclick="mostrarDefinicion(`@Html.Raw(objeto.definition.Replace("'", "\\'"))`)">
-                 
+                <a href="#" class="list-group-item list-group-item-action" onclick="mostrarDefinicion(`@Html.Raw(objeto.definition.Replace("'", "\\'"))`)">
                     @objeto.TABLE_NAME
+                    @if(objeto.definition=="")
+                    {
+                        <i data-feather="lock"></i>
+                    }
                 </a>
             }
+
 
            
         </div>

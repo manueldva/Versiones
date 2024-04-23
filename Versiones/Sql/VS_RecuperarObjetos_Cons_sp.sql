@@ -11,7 +11,7 @@ BEGIN
                 ROW_NUMBER() OVER (ORDER BY TABLE_SCHEMA, TABLE_NAME) AS RowNum,
                 TABLE_SCHEMA,
                 TABLE_NAME,
-                dbo.GetTableDefinitionScript(TABLE_NAME) AS definition
+                dbo.VS_GetTableDefinitionScript(TABLE_NAME) AS definition
             FROM
                 INFORMATION_SCHEMA.TABLES
             WHERE

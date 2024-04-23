@@ -66,6 +66,7 @@ public class GenerarDeploysController : Controller
 
         ViewData["RecuperarObjetos"] = RecuperarObjetos;
         ViewData["TiposObjeto"] = tiposObjeto;
+        ViewData["TipoID"] = TipoID;
         ViewData["currentPage"] = currentPage;
         ViewData["pageSize"] = pageSize;
 

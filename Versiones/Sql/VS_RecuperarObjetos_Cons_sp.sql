@@ -30,7 +30,7 @@ BEGIN
 		 CAST(ROW_NUMBER() OVER (ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME) AS INT) AS ID,
 		ROUTINE_SCHEMA AS TABLE_SCHEMA,
 		ROUTINE_NAME AS TABLE_NAME,
-		( SELECT definition FROM sys.all_sql_modules WHERE object_id = OBJECT_ID(ROUTINE_NAME)) definition
+		( SELECT isnull(definition,'Encriptado') FROM sys.all_sql_modules WHERE object_id = OBJECT_ID(ROUTINE_NAME)) definition
 	FROM 
 		INFORMATION_SCHEMA.ROUTINES
 	WHERE 

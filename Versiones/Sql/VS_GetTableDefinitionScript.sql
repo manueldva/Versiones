@@ -1,24 +1,65 @@
-CREATE FUNCTION dbo.VS_GetTableDefinitionScript(@TableName NVARCHAR(128))
-RETURNS NVARCHAR(MAX)
+ALTER PROCEDURE [dbo].[VS_RecuperarObjetos_Cons_sp] 
+    @TipoID int = NULL,
+    @PageSize int = 10,
+    @PageNumber int = 1
 AS
 BEGIN
-    DECLARE @CreateScript NVARCHAR(MAX);
+	DECLARE @Tipo varchar(200)
+	SELECT @Tipo = CASE
+	WHEN @TipoID = 2 THEN 'PROCEDURE'
+	WHEN @TipoID = 3 THEN 'FUNCTION'
+	END
 
-    SET @CreateScript = (
+    IF @TipoID IS NULL OR @TipoID = 1
+    BEGIN
+        WITH CTE AS (
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY TABLE_SCHEMA, TABLE_NAME) AS RowNum,
+                TABLE_SCHEMA,
+                TABLE_NAME,
+                dbo.VS_GetTableDefinitionScript(TABLE_NAME) AS definition
+            FROM
+                INFORMATION_SCHEMA.TABLES
+            WHERE
+                TABLE_TYPE = 'BASE TABLE'
+        )
+        SELECT
+            CAST(RowNum AS INT) ID,
+            TABLE_SCHEMA,
+            TABLE_NAME,
+            definition
+        FROM
+            CTE
+        WHERE
+            RowNum BETWEEN (@PageNumber - 1) * @PageSize + 1 AND @PageNumber * @PageSize
+        ORDER BY
+            TABLE_SCHEMA,
+            TABLE_NAME;
+    END 
+    ELSE
+    BEGIN
+        WITH CTE AS (
+            SELECT 
+                ROW_NUMBER() OVER (ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME) AS RowNum,
+                ROUTINE_SCHEMA AS TABLE_SCHEMA,
+                ROUTINE_NAME AS TABLE_NAME,
+                (SELECT ISNULL(definition, 'Encriptado') FROM sys.all_sql_modules WHERE object_id = OBJECT_ID(ROUTINE_NAME)) AS definition
+            FROM 
+                INFORMATION_SCHEMA.ROUTINES
+            WHERE 
+                ROUTINE_TYPE = @Tipo
+        )
         SELECT 
-            'CREATE TABLE ' + QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME) + CHAR(13) + '(' + CHAR(13) +
-            STUFF((
-                SELECT CHAR(9) + ', ' + QUOTENAME(c.COLUMN_NAME) + ' ' + c.DATA_TYPE +
-                       COALESCE('('+CAST(c.CHARACTER_MAXIMUM_LENGTH AS VARCHAR)+')','') +
-                       CASE WHEN c.IS_NULLABLE = 'NO' THEN ' NOT NULL' ELSE '' END + CHAR(13)
-                FROM INFORMATION_SCHEMA.COLUMNS c
-                WHERE c.TABLE_SCHEMA = t.TABLE_SCHEMA
-                  AND c.TABLE_NAME = t.TABLE_NAME
-                ORDER BY c.ORDINAL_POSITION
-                FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') + ');' AS CreateScript
-        FROM INFORMATION_SCHEMA.TABLES t
-        WHERE t.TABLE_NAME = @TableName
-    );
-
-    RETURN @CreateScript;
-END;
+            CAST(RowNum AS INT) ID,
+            TABLE_SCHEMA,
+            TABLE_NAME,
+            definition
+        FROM 
+            CTE
+        WHERE 
+            RowNum BETWEEN (@PageNumber - 1) * @PageSize + 1 AND @PageNumber * @PageSize
+        ORDER BY 
+            TABLE_SCHEMA, 
+            TABLE_NAME;
+    END
+END

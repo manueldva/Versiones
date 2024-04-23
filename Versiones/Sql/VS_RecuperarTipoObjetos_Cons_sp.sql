@@ -1,6 +1,10 @@
-CREATE procedure VS_RecuperarTipoObjetos_Cons_sp
+
+
+alter procedure VS_RecuperarTipoObjetos_Cons_sp
 as
 
-SELECT 1 TipoID, 'Tabla' Tipo
+SELECT 1 TipoID, 'TABLA' Tipo
 union 
-select 2 TipoID, 'Store' Tipo
+select 2 TipoID, 'STORE' Tipo
+union 
+select 3 TipoID, 'FUNCION' Tipo

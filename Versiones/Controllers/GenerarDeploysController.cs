@@ -18,7 +18,7 @@ public class GenerarDeploysController : Controller
     public IActionResult Index(int? TipoID, int? page)
     {
         int currentPage = (page != null && page > 0) ? page.Value : 1;
-        int pageSize = 10; // Número de elementos por página
+        int pageSize = 9000; // Número de elementos por página
 
         List<RecuperarObjeto> RecuperarObjetos = new List<RecuperarObjeto>();
         using (var command = _context.Database.GetDbConnection().CreateCommand())
@@ -58,6 +58,7 @@ public class GenerarDeploysController : Controller
                 tiposObjeto = result.Cast<IDataRecord>()
                     .Select(x => new TipoObjeto()
                     {
+
                         TipoID = (int)x["TipoID"],
                         Tipo = (string)x["Tipo"],
                         Selected = TipoID != null && (int)x["TipoID"] == TipoID

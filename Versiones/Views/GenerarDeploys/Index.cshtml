@@ -7,25 +7,41 @@
         <form method="get">
             <select name="TipoID" class="form-select" aria-label="Default select example">
                 <!-- Aquí puedes generar las opciones del select con los datos del procedimiento almacenado -->
+               
                 @foreach (var tipoObjeto in (List<Versiones.Models.TipoObjeto>)ViewData["TiposObjeto"])
                 {
+                    
                     @if (@tipoObjeto.Selected == true)
                     {
-                        <option value="@tipoObjeto.TipoID" selected>@tipoObjeto.Tipo</option>
+                        <option  value="@tipoObjeto.TipoID" selected>@tipoObjeto.Tipo</option>
                     }
                     else
                     {
-                        <option value="@tipoObjeto.TipoID">@tipoObjeto.Tipo</option>
+                        <option   value="@tipoObjeto.TipoID">@tipoObjeto.Tipo</option>
                     }
                 }
             </select>
+            <input type="text" class="form-control" onkeydown="searchObject(this)" id="searchObj" placeholder="Search Object"  >
         </form>
         <br />
 
-        <div class="list-group">
+        <div class="list-group" style="max-height: 500px;overflow-y: hidden;">
+            <div style="overflow-y: scroll;">
+
+        
+             @{
+                      int i=0;
+                    string dclass="";
+                }
             @foreach (var objeto in (List<Versiones.Models.RecuperarObjeto>)ViewData["RecuperarObjetos"])
             {
-                <a href="#" class="list-group-item list-group-item-action" onclick="mostrarDefinicion(`@Html.Raw(objeto.definition.Replace("'", "\\'"))`)">
+                    {
+                        i=i+1;
+                        if(i>10){
+                            dclass="d-none";
+                        }   
+                    }
+                <a href="#" data-name="@objeto.TABLE_NAME"  class="data-search list-group-item list-group-item-action @dclass" onclick="mostrarDefinicion(`@Html.Raw(objeto.definition.Replace("'", "\\'"))`)">
                     @objeto.TABLE_NAME
                     @if(objeto.definition=="")
                     {
@@ -35,13 +51,13 @@
             }
 
 
-           
+               </div>
         </div>
         <br />
-        <div class="btn-group btn-group-lg" role="group" aria-label="Large button group">
+        @* <div class="btn-group btn-group-lg" role="group" aria-label="Large button group">
             <a href="?TipoID=@ViewData["TipoID"]&page=@(((int)ViewData["currentPage"]) - 1)" class="btn btn-outline-primary">Anterior</a>
             <a href="?TipoID=@ViewData["TipoID"]&page=@(((int)ViewData["currentPage"]) + 1)" class="btn btn-outline-primary">Siguiente</a>
-        </div>
+        </div> *@
         <!-- Botones de paginación -->
 
         
@@ -59,6 +75,13 @@
 
 
 <script>
+     $(document).ready(function () {
+        
+        
+        $('select[name="TipoID"]').change(function () {
+            this.form.submit();
+        });
+    });
     var editor = CodeMirror.fromTextArea(document.getElementById('sqlCode'), {
         lineNumbers: true,
         mode: 'text/x-mysql'
@@ -66,11 +89,23 @@
     editor.setSize(null, 'calc(100vh - 150px)');
 
 
-    $(document).ready(function () {
-        $('select[name="TipoID"]').change(function () {
-            this.form.submit();
-        });
-    });
+    function searchObject(e){
+        console.log("adsfasd")
+        let elemento=$(e).val()
+ 
+             
+            if(elemento.length>=2){
+                $(".data-search").addClass("d-none")
+               const elements=document.querySelectorAll('.data-search[data-name^="'+elemento+'"]');
+               $(elements).removeClass("d-none")
+            }else{
+                $(document.querySelectorAll('.data-search')).addClass("d-none")
+                const elements=Object.entries(document.querySelectorAll('.data-search')).slice(0,10) 
+                elements.forEach(item=>{
+                    $(item).removeClass("d-none")
+                })
+            }
+    }
     function mostrarDefinicion(definicion) {
         let sqlCode = document.getElementById('sqlCode');
         console.log(definicion);

@@ -41,7 +41,8 @@
                             dclass="d-none";
                         }   
                     }
-                <a href="#" data-name="@objeto.TABLE_NAME"  class="data-search list-group-item list-group-item-action @dclass" onclick="mostrarDefinicion(`@Html.Raw(objeto.definition.Replace("'", "\\'"))`)">
+                <a href="#" data-name="@objeto.TABLE_NAME"  class="data-search list-group-item list-group-item-action @dclass" data-struct="@Html.Raw(objeto.definition.Replace("'", "\\'"))">
+                    <input type="checkbox"  onclick="showDataStuct(this)">
                     @objeto.TABLE_NAME
                     @if(objeto.definition=="")
                     {
@@ -88,17 +89,19 @@
     });
     editor.setSize(null, 'calc(100vh - 150px)');
 
-
+        /*
+        * Se añadio la funcion de busqueda por elemento
+        */
     function searchObject(e){
-        console.log("adsfasd")
         let elemento=$(e).val()
- 
-             
+            //en caso de que la cantidad de caracteres sea 2 recien busca entre las tablas
+            //en caso de que no carga los primeros 7 elementos 
             if(elemento.length>=2){
                 $(".data-search").addClass("d-none")
                const elements=document.querySelectorAll('.data-search[data-name^="'+elemento+'"]');
                $(elements).removeClass("d-none")
             }else{
+
                 $(document.querySelectorAll('.data-search')).addClass("d-none")
                 const elements=Object.entries(document.querySelectorAll('.data-search')).slice(0,10) 
                 elements.forEach(item=>{
@@ -106,18 +109,34 @@
                 })
             }
     }
-    function mostrarDefinicion(definicion) {
-        let sqlCode = document.getElementById('sqlCode');
-        console.log(definicion);
-        // Actualizar el valor del editor de CodeMirror
-        if (editor) {
-            editor.setValue(definicion);
-        } else {
-            editor = CodeMirror.fromTextArea(sqlCode, {
-                lineNumbers: true,
-                mode: 'text/x-mysql'
-            });
+    function showDataStuct(elemento){
+        let auxDefinitions=editor.getValue()+"\n"
+        const definicion=$(elemento).parent().attr("data-struct")
+        const tableName=$(elemento).parent().attr("data-name")
+        if(!$(elemento).is(":checked")){
+            let aux=auxDefinitions.substring(auxDefinitions.indexOf("--########################### Start Tabla "+tableName),auxDefinitions.indexOf(tableName+" End Tabla ")+tableName.length+10)
+            console.log(aux,auxDefinitions.indexOf("--########################### Start Tabla "+tableName))
+            auxDefinitions=auxDefinitions.replaceAll(aux,"")
+            editor.setValue(auxDefinitions);
+        }else{
+            
+            let sqlCode = document.getElementById('sqlCode');
+            auxDefinitions=auxDefinitions+"\n --########################### Start Tabla  "+tableName+"\n"+definicion+"\n --########################### "+tableName+" End Tabla  \n";
+            
+            // Actualizar el valor del editor de CodeMirror
+            if (editor) {
+                editor.setValue(auxDefinitions);
+            } else {
+                editor = CodeMirror.fromTextArea(sqlCode, {
+                    lineNumbers: true,
+                    mode: 'text/x-mysql'
+                });
+            }
+
         }
+    }
+    function mostrarDefinicion(definicion) {
+        
     }
 </script>
 
